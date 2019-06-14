@@ -42,4 +42,4 @@ class Facebook(ISpider):
         yield Request('https://m.facebook.com/home.php', callback=self.home_page, errback=self.error)
 
     def home_page(self, res):
-        print("@@@@@@@@@", res.body)
+        print("@@@@@@@@@", res)

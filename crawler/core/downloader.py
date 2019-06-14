@@ -12,35 +12,13 @@ from twisted.internet import defer
 from crawler.utils.defer import succeed, fail
 from twisted.web import http
 from requests_threads import AsyncSession
-#from twisted.python.failure import Failure
-logger = logging.getLogger('crawler')
 
+logger = logging.getLogger('crawler')
 
 class Downloader(object):
     def __init__(self, crawler):
         logger.debug("New Downloader")
         self.session = AsyncSession(n=100)
-    """
-    @defer.inlineCallbacks
-    def make_a_request(self, request):
-
-        response = yield treq.request(request.method, request.url, json=request.body, params=request.params, cookies=request.cookies)
-        print("@@@@@@@@")
-        if response.code == http.OK:
-            result = yield response
-        else:
-            print("OPS")
-            message = yield response
-
-            raise Exception("Got an error from the server: {}".format(message))
-        defer.returnValue(result)
-    def get_content(self, response, request):
-        d = treq.text_content(response)
-
-        def forge_response(body, response, request):
-            return Response(status=response.code, headers=response.headers, body=body, request=request, cookies=response.cookies())
-        return d.addCallback(forge_response, response, request)
-    """
 
     def download(self, request):
         logger.debug(f"DOWNLOADER downloading {request.method} {request.url}")

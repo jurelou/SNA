@@ -10,6 +10,8 @@ from crawler.http import Request
 
 
 class ISpider(object):
+    lxml = False
+
     def __init__(self):
         if not hasattr(self, 'name'):
             raise ValueError("Spider must have a name")

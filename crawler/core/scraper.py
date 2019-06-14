@@ -7,6 +7,7 @@
 # ------------------------------------------------------------
 
 import logging
+import lxml.html
 from collections import deque
 from twisted.python.failure import Failure
 from twisted.internet import defer, task, reactor
@@ -76,6 +77,12 @@ class Scraper(object):
             reactor.callLater(0, d.errback, response)
         else:
             reactor.callLater(0, d.callback, response)
+        def format_response(response):
+            if not self.spider.lxml:
+                return response
+            response.body = lxml.html.fromstring(response.body)
+            return response
+        d.addCallback(format_response)
         d.addCallbacks(request.callback, request.errback)
         d.addCallback(self.handle_spider_output, request, response)
         d.addErrback(logger.fatal, "ERROR in spider callback function:")
