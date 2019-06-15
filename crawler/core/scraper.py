@@ -77,13 +77,15 @@ class Scraper(object):
             reactor.callLater(0, d.errback, response)
         else:
             reactor.callLater(0, d.callback, response)
+
         def format_response(response):
-            if not self.spider.lxml:
+            if not self.spider.lxml or not response.body:
                 return response
+            logger.debug("Formating response with LXML")
             response.body = lxml.html.fromstring(response.body)
             return response
         d.addCallback(format_response)
-        d.addCallbacks(request.callback, request.errback)
+        d.addCallback(request.callback)
         d.addCallback(self.handle_spider_output, request, response)
         d.addErrback(logger.fatal, "ERROR in spider callback function:")
         return d

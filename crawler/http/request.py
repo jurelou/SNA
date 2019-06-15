@@ -50,8 +50,8 @@ class Request(object):
     @callback.setter
     def callback(self, value):
         if value is not None and not callable(value):
-            raise ValueError('Inappropriate type: {} for reqoest.callback whereas a function \
-            is expected'.format(type(value)))
+            raise ValueError(f'Inappropriate type: {type(value)} for reqoest.callback whereas a function \
+            is expected')
         else:
             self._callback = value
 
@@ -63,7 +63,6 @@ class Request(object):
     def errback(self, value):
         if value is not None and not callable(value):
             raise ValueError(
-                'Inappropriate type: {} for reqoest.errback whereas a function is expected'.format(
-                    type(value)))
+                f'Inappropriate type: {type(value)} for request.errback whereas a function is expected')
         else:
             self._errback = value

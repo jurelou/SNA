@@ -10,6 +10,7 @@ from crawler.http import Request
 
 
 class ISpider(object):
+
     lxml = False
 
     def __init__(self):
