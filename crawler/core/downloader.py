@@ -15,6 +15,7 @@ from requests_threads import AsyncSession
 
 logger = logging.getLogger('crawler')
 
+
 class Downloader(object):
     def __init__(self, crawler):
         logger.debug("New Downloader")
