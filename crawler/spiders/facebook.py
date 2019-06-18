@@ -42,7 +42,7 @@ class Facebook(ISpider):
                 return
             logger.info(f"Facebook authentication succeeded!")
             yield Request('https://m.facebook.com/home.php', callback=self.get_fb_dtsg, errback=self.error)
-            for req in self.parse_user_page("johndoe"):
+            for req in self.parse_user_page("margot.laval.9"):
                 yield req
         yield Request('https://m.facebook.com/login.php', method='POST', body=login_data, allow_redirects=False, callback=_logged_in, errback=self.error)
 
@@ -97,19 +97,27 @@ class Facebook(ISpider):
         if data['photos_link']:
             yield Request(self.base_url + data['photos_link'], callback=self.extract_photos_data)
 
+
+    def extract_album_data(self, response):
+        #open_page(response)
+        likes = response.body.xpath('//div/div/div/div/div/div/a')
+        pass
     """
-        Response is the content from facebook user albums: http://m.facebook.com/{userId}/photos?lst=X
+        Response is the content from facebook user albums page: http://m.facebook.com/{userId}/photos?lst=X
         This method will search for peoples (likes, comments, reactions) in all public pictures
     """
     def extract_photos_data(self, response):
         def extract_albums(page):
             albums = page.xpath('//span/a')
             for album in albums:
+                yield Request(self.base_url + album.attrib['href'], callback=self.extract_album_data)
                 print("Found album ->", album.text, album.attrib['href'])
-        extract_albums(response.body)
-
+        
+        for req in extract_albums(response.body):
+            yield req
         def then(res):
-            extract_albums(res.body)
+            for req in extract_albums(res.body):
+                yield req
             next_page = res.body.xpath('//span[contains(text(), " More Albums")]/ancestor::a')
             if next_page:
                 print("NIIIIIIIIce!! even more albums !!")
@@ -129,8 +137,7 @@ class Facebook(ISpider):
             friends = page.xpath('//td[@class="v s"]/a')
             if friends:
                 for f in friends:
-                    with open("toto.txt", "a+") as a:
-                        a.write(f"FRIEND of tonald drump-> {f.attrib['href']}\n")
+                    print("Found friend:", f.attrib['href'], f.attrib)
             else:
                 print("No friends on this page, this should not happen !!!!!!")
         extract_friends(res.body)
