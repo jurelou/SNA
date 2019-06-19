@@ -19,7 +19,7 @@ logger = logging.getLogger('crawler')
 
 class Scraper(object):
     def __init__(self, crawler):
-        logger.info("New Scrapper")
+        logger.debug("New Scrapper")
         self.max_concurency = 100
         self.spider = None
         self.queue = deque()
@@ -31,12 +31,12 @@ class Scraper(object):
 
     def is_busy(self):
         if len(self.queue) > self.max_concurency:
-            logger.info("SCRAPPER is busy right now")
+            logger.debug("SCRAPPER is busy right now")
             return True
         return False
 
     def close(self):
-        logger.info("Close Scrapper")
+        logger.debug("Close Scrapper")
         return
 
     def try_close(self):
@@ -91,7 +91,7 @@ class Scraper(object):
         return d
 
     def handle_spider_error(self, err, request, response):
-        logger.info(f"ERROR in SCRAPPER from spider request: {request.url} {err}")
+        logger.fatal(f"ERROR in SCRAPPER from spider request: {request.url} {err}")
         self.crawler.brain.stop()
 
     def iter(self, iterable, errback, request, response):

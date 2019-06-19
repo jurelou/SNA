@@ -67,7 +67,10 @@ def initLogger():
     logging.getLogger("urllib3.contrib.pyopenssl").setLevel(logging.WARNING)
     logging.getLogger("urllib3.contrib").setLevel(logging.WARNING)
     logging.getLogger("socks").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("pyasn1").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.setLoggerClass(ColoredLogger)
+    logging.getLogger('crawler').setLevel(logging.INFO)
+

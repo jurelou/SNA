@@ -6,6 +6,4 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
-from crawler.http import Request, Response
-from crawler.spiders.ISpider import ISpider
-from crawler.spiders.Facebook.facebook import Facebook
+import crawler.spiders.Facebook.albums

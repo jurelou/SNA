@@ -14,7 +14,7 @@ logger = logging.getLogger('crawler')
 
 class Scheduler(object):
     def __init__(self, crawler):
-        logger.info("New Scheduler")
+        logger.debug("New Scheduler")
         self.q = queue.Queue()
         self.crawler = crawler
 
@@ -26,7 +26,7 @@ class Scheduler(object):
         pass
 
     def enqueue_request(self, request):
-        logger.debug(f"Pushing to scheduler request: {request.url}")
+        logger.debug(f"Pushing to scheduler request: {request.url} {request.meta}")
         self.q.put(request)
         return True
 
@@ -35,5 +35,5 @@ class Scheduler(object):
             logger.debug(f"Scheduler have nothing to pop!")
             return None
         res = self.q.get()
-        logger.debug(f"Scheduler pop request: {res.url}")
+        logger.debug(f"Scheduler pop request: {res.url} {res.meta}")
         return res

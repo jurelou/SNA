@@ -19,13 +19,15 @@ class Response(object):
             body=None,
             request=None,
             cookies=None,
-            encoding=None):
+            encoding=None,
+            meta={}):
         self._status = status
         self._body = body
         self._headers = headers
         self._cookies = cookies
         self.request = request
         self.encoding = encoding
+        self.meta = meta
 
     def __str__(self):
         ret = f"\nRequest: {self._status}\nrequest: {self.request.url}\nHeaders:\n\t"
@@ -34,6 +36,7 @@ class Response(object):
         ret += "\nCookies:\n\t"
         for c in self._cookies:
             ret += f"{c.name} -> {c.value} ({c.domain})\n\t"
+        ret +=f"\nMeta: {self.meta}"
         return ret
 
     @property
@@ -43,6 +46,10 @@ class Response(object):
     @property
     def cookies(self):
         return self._cookies
+
+    @cookies.setter
+    def cookies(self, val):
+        self._cookies = val
 
     @property
     def body(self):

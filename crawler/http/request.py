@@ -17,7 +17,8 @@ class Request(object):
             body=None,
             params=None,
             cookies=None,
-            allow_redirects=True):
+            allow_redirects=True,
+            meta = None):
         self.url = url
         self._method = method
         self.callback = callback
@@ -26,11 +27,12 @@ class Request(object):
         self._params = params
         self._cookies = cookies
         self.allow_redirects = allow_redirects
+        self.meta = meta
 
     @property
     def method(self):
         return self._method
-
+    
     @property
     def callback(self):
         return self._callback

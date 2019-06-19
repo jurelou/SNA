@@ -19,7 +19,7 @@ logger = logging.getLogger('crawler')
 
 class Brain(object):
     def __init__(self, crawler, close_callback):
-        logger.info('New Brain')
+        logger.debug('New Brain')
         self.spider = crawler.spider
         self.running = False
         self.closing = False
@@ -47,11 +47,11 @@ class Brain(object):
     def try_close(self):
         logger.debug('Trying to close brain')
         if (self.closing and not self.inprogress) or self.scraper.try_close():
-            logger.info('Brain can be closed now')
+            logger.debug('Brain can be closed now')
             self.closing.callback(None)
 
     def next(self):
-        logger.info("Brain next Event loop !")
+        logger.debug("Brain next Event loop !")
         while not self.is_busy():
             if not self.from_scheduler():
                 break
@@ -93,7 +93,7 @@ class Brain(object):
         return err
 
     def crawl(self, request):
-        logger.info(f"Crawling for {request.url}")
+        logger.debug(f"Crawling for {request.url}")
         self.scheduler.enqueue_request(request)
         reactor.callLater(0, self.next)
 
