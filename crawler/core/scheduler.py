@@ -26,6 +26,7 @@ class Scheduler(object):
         pass
 
     def enqueue_request(self, request):
+        print("-------------", hash(request))
         logger.debug(f"Pushing to scheduler request: {request.url} {request.meta}")
         self.q.put(request)
         return True

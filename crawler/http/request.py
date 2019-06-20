@@ -18,36 +18,31 @@ class Request(object):
             params=None,
             cookies=None,
             allow_redirects=True,
-            meta = None):
+            meta=None):
         self.url = url
-        self._method = method
+        self.method = method
         self.callback = callback
         self.errback = errback
-        self._body = body
-        self._params = params
-        self._cookies = cookies
+        self.body = body
+        self.params = params
+        self.cookies = cookies
         self.allow_redirects = allow_redirects
         self.meta = meta
 
-    @property
-    def method(self):
-        return self._method
-    
+    def __eq__(self, other):
+        return self.url == other.url and self.method == other.method and self.body == other.body and self.params == other.params and self.allow_redirects == other.allow_redirects
+
+    def __hash__(self):
+        return hash(
+            (self.url,
+             self.method,
+             self.body,
+             self.params,
+             self.allow_redirects))
+
     @property
     def callback(self):
         return self._callback
-
-    @property
-    def body(self):
-        return self._body
-
-    @property
-    def params(self):
-        return self._params
-
-    @property
-    def cookies(self):
-        return self._cookies
 
     @callback.setter
     def callback(self, value):

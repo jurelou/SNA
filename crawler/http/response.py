@@ -38,7 +38,7 @@ class Response(object):
         for c in self._cookies:
             ret += f"{c.name} -> {c.value} ({c.domain})\n\t"
         """
-        ret +=f"\nMeta: {self.meta}"
+        ret += f"\nMeta: {self.meta}"
         return ret
 
     @property
