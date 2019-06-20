@@ -35,6 +35,11 @@ class ISpider(object):
     def set_preload_cookies(self, value):
         exists = os.path.exists(self.cookies_file)
         cookies = {}
+        if not hasattr(value, "__len__"):
+            raise ValueError(f'Preload cookies need an iterable, found {type(value)}')
+        for v in value:
+            if not all (k in v for k in ("name","value", "domain")):
+                raise ValueError(f'Preload cookies need an object with name, value and domain keys, found{value}')
         if exists:
             with open(self.cookies_file, 'rb') as f:
                 try:
