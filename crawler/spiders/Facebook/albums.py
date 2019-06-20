@@ -6,35 +6,78 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
+from crawler.utils.webbrowser import open_page
 from crawler.http import Request
 
 
-def extract_album_likes(response):
-    def extract_likes(response):
+def extract_likes(response):
+    def extract(response):
         likes = response.body.xpath('//table/tbody/tr/td/div/h3/a')
         for like in likes:
-            print(response.meta, like.text, like.attrib["href"])
+            if like.text:
+                # TODO: store result
+                print("++++", response.meta, like.text, like.attrib["href"])
+            pass
         see_more = response.body.xpath('//li/table/tbody/tr/td/div/a')
         if see_more:
-            yield Request('https://mbasic.facebook.com' + see_more[0].attrib['href'], callback=extract_likes, meta=response.meta)
-    all_reactions = response.body.xpath(
-        '//table/tbody/tr/td/div/div/a')[0].attrib['href']
-    yield Request('https://mbasic.facebook.com' + all_reactions, callback=extract_likes, meta=response.meta)
+            yield Request('https://mbasic.facebook.com' + see_more[0].attrib['href'], callback=extract, meta=response.meta)
+
+    all_reactions = response.body.xpath('//table/tbody/tr/td/div/div/a')
+    if all_reactions:
+        yield Request('https://mbasic.facebook.com' + all_reactions[0].attrib['href'], callback=extract, meta=response.meta)
+    else:
+        for req in extract(response):
+            yield req
+
+
+def extract_picture_data(response):
+    likes = response.body.xpath(
+        '//div[@id="MPhotoContent"]/div/div[not(@class="msg")]/div/div/a')
+    if likes:
+        yield Request('https://mbasic.facebook.com' + likes[0].attrib['href'], callback=extract_likes, meta=dict({'likes_from': 'album.picture'}, **response.meta))
+    comments = response.body.xpath(
+        '//div[@id="MPhotoContent"]/div/div[not(@class="msg")]/div/div/div/div/h3/a')
+    comments_like = response.body.xpath('//div/div/div/span/span/a')
+    """
+        comment_text = response.body.xpath('//div[@id="MPhotoContent"]/div/div[not(@class="msg")]/div/div/div/div/div[not(@class="mUFICommentContent")]/text()')
+        print("->>>>", comment_text)
+    """
+    for comment in comments:
+        print("!!!", response.meta, comment.text, comment.attrib['href'])
+    for like in comments_like:
+        yield Request('https://mbasic.facebook.com' + like.attrib['href'], callback=extract_likes, meta=dict({'likes_from': 'album.picture.comment'}, **response.meta))
 
 
 def extract_album_data(response):
     likes = response.body.xpath(
         '//div[@id="root"]/table/tbody/tr/td/div/div/div/div/div/div/a')
-    pictures = response.body.xpath('//div[@id="thumbnail_area"]/a')
-    more_pictures = response.body.xpath('//div[@id="m_more_item"]/a')
+    comments = response.body.xpath(
+        '//tr/td/div/div/div/div/div/div/div/div/h3/a')
+    comments_like = response.body.xpath('//div/div/div/div/span/span/a')
+
+    def goto_next_pictures_page(response):
+        pictures = response.body.xpath('//div[@id="thumbnail_area"]/a')
+        for picture in pictures:
+            yield Request('https://mbasic.facebook.com' + picture.attrib['href'], callback=extract_picture_data, meta=response.meta)
+        more_pictures = response.body.xpath('//div[@id="m_more_item"]/a')
+        if more_pictures:
+            yield Request('https://mbasic.facebook.com' + more_pictures[0].attrib['href'], callback=goto_next_pictures_page, meta=response.meta)
+    for req in goto_next_pictures_page(response):
+        yield req
     if likes:
-        yield Request('https://mbasic.facebook.com' + likes[0].attrib['href'], callback=extract_album_likes, meta=response.meta)
+        yield Request('https://mbasic.facebook.com' + likes[0].attrib['href'], callback=extract_likes, meta=dict({'likes_from': 'album'}, **response.meta))
+    for comment in comments:
+        # TODO: store result
+        print("@@@", response.meta, comment.text, comment.attrib['href'])
+    for like in comments_like:
+        yield Request('https://mbasic.facebook.com' + like.attrib['href'], callback=extract_likes, meta=dict({'likes_from': 'album.comment'}, **response.meta))
 
 
 def extract_albums_data(response):
     def extract_albums(res):
         albums = res.body.xpath('//span/a')
         for album in albums:
+            print(f'++ Found album {album.text}')
             yield Request('https://m.facebook.com' + album.attrib['href'], callback=extract_album_data, meta=dict({'album': album.text}, **res.meta))
 
     def goto_nextpage(res):

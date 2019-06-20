@@ -34,6 +34,7 @@ class Brain(object):
     def start(self):
         self.scheduler.start()
         self.scraper.start(self.spider)
+        self.downloader.start()
         reactor.callLater(0, self.next)
 
     @defer.inlineCallbacks

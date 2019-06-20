@@ -33,9 +33,11 @@ class Response(object):
         ret = f"\nRequest: {self._status}\nrequest: {self.request.url}\nHeaders:\n\t"
         for h in self._headers:
             ret += f"{h} -> {self._headers[h]}\n\t"
-        ret += "\nCookies:\n\t"
+        ret += "\nCookies:\n\t" + str(self._cookies)
+        """
         for c in self._cookies:
             ret += f"{c.name} -> {c.value} ({c.domain})\n\t"
+        """
         ret +=f"\nMeta: {self.meta}"
         return ret
 

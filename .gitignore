@@ -1,5 +1,7 @@
-*config.py
-temp/
+config.py
+/temp/
+.auth_cookies
+*.html
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

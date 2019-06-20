@@ -7,6 +7,7 @@
 # ------------------------------------------------------------
 
 import logging
+import os
 from crawler.utils.webbrowser import open_page
 from crawler import config
 from crawler.spiders import ISpider
@@ -26,43 +27,45 @@ class Facebook(ISpider):
         self.base_url = 'https://m.facebook.com'
         self.entrypoint = Request(
             "https://m.facebook.com",
-            callback=self.login,
+            callback=self.try_login,
             errback=self.error)
-        self.count = 0
+        self.start_user = "margot.laval.9"
 
     def error(self, err):
         logger.fatal(f"In facebook spider: {err}")
 
-    def login(self, res):
-        """
-        login_data = {
-            'email': config.FACEBOOK_CREDENTIALS[0],
-            'pass': config.FACEBOOK_CREDENTIALS[1]}
-        def _logged_in(res):
-            if 'c_user' not in res.cookies:
-                open_page(res)
-                logger.fatal(f"Facebook authentication failed")
-                return
-            logger.info(f"Facebook authentication succeeded!")
-            print("@@@@@@@@@@@@@", res.cookies)
-            yield Request('https://m.facebook.com/home.php', callback=self.get_fb_dtsg, errback=self.error)
+    def login(self, response):
+        if not all(k in response.cookies for k in ('c_user', 'xs', 'sb')):
+            logger.fatal(f"Facebook authentication failed")
             return
-            for req in self.parse_user_page("margot.laval.9"):
-                yield req
-        yield Request('https://m.facebook.com/login.php', method='POST', body=login_data, allow_redirects=False, callback=_logged_in, errback=self.error)
-        """
-        yield Request('https://m.facebook.com/home.php', callback=self.get_fb_dtsg, errback=self.error)
-        for req in self.parse_user_page("margot.laval.9"):
+        logger.info(f"Facebook authentication succeeded!")
+        preload_cookies = []
+        for c in response.cookies:
+            if c.name in ['c_user', 'xs', 'sb']:
+                preload_cookies.append(
+                    {'name': c.name, 'value': c.value, 'domain': c.domain})
+        self.set_preload_cookies(preload_cookies)
+        for req in self.parse_user_page():
             yield req
-    """
-        Find the facebook CSRF token which is a hidden input in the facebook status bar
-    """
 
-    def get_fb_dtsg(self, res):
-        self.fb_dtsg = res.body.xpath('//input[@name="fb_dtsg"]/@value')[0]
-        print("CSRF token=>>>>>>>>>>>>", self.fb_dtsg)
+    def try_login(self, res):
+        def is_logged_in(response):
+            csrf_token = self.fb_dtsg = res.body.xpath(
+                '//input[@name="fb_dtsg"]/@value')
+            if not csrf_token:
+                logger.info("Need to loggin to facebook")
+                login_data = {
+                    'email': config.FACEBOOK_CREDENTIALS[0],
+                    'pass': config.FACEBOOK_CREDENTIALS[1]}
+                yield Request('https://m.facebook.com/login.php', method='POST', body=login_data, allow_redirects=False, callback=self.login, errback=self.error)
+            else:
+                logger.info(
+                    "Already logged in to facebook thanks to the preloaded cookies")
+                for req in self.parse_user_page():
+                    yield req
+        yield Request('https://m.facebook.com/home.php', callback=is_logged_in)
 
-    def parse_user_page(self, userID):
+    def parse_user_page(self):
         def extract_data(res):
             data = {'user': res.meta['user'],
                     'friends_link': None,
@@ -107,7 +110,7 @@ class Facebook(ISpider):
                                    for i in life_events]
             for req in self.extract_profile_data(data):
                 yield req
-        yield Request(f'https://m.facebook.com/{userID}', callback=extract_data, meta={"user": userID})
+        yield Request(f'https://m.facebook.com/{self.start_user}', callback=extract_data, meta={"user": self.start_user})
 
     def extract_profile_data(self, data):
         # yield Request(f'https://m.facebook.com/{userID}/friends',
@@ -123,7 +126,7 @@ class Facebook(ISpider):
                     #print("Found friend:", f.attrib['href'], f.attrib)
                     pass
             else:
-                #print("No friends on this page, this should not happen !!!!!!")
+                #print("No friends on this  page, this should not happen !!!!!!")
                 pass
         extract_friends(res.body)
         next_link = res.body.xpath('//div[@id="m_more_friends"]/a')

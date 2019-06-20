@@ -72,5 +72,3 @@ def initLogger():
     logging.getLogger("pyasn1").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.setLoggerClass(ColoredLogger)
-    logging.getLogger('crawler').setLevel(logging.INFO)
-

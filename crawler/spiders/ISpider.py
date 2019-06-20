@@ -6,13 +6,43 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
+import os
+import pickle
 from crawler.http import Request
 
 
 class ISpider(object):
-
     lxml = False
 
     def __init__(self):
+        self.cookies_file = os.path.dirname(
+            os.path.realpath(__file__)) + "/.auth_cookies"
         if not hasattr(self, 'name'):
             raise ValueError("Spider must have a name")
+
+    @property
+    def preload_cookies(self):
+        exists = os.path.exists(self.cookies_file)
+        if not exists:
+            return {}
+        with open(self.cookies_file, 'rb') as f:
+            try:
+                cookies = pickle.load(f)
+                return cookies[self.name]
+            except EOFError:
+                return {}
+
+    def set_preload_cookies(self, value):
+        exists = os.path.exists(self.cookies_file)
+        cookies = {}
+        if exists:
+            with open(self.cookies_file, 'rb') as f:
+                try:
+                    cookies = pickle.load(f)
+                except EOFError:
+                    pass
+        if self.name in cookies:
+            del cookies[self.name]
+        cookies[self.name] = value
+        with open(self.cookies_file, 'wb') as f:
+            pickle.dump(cookies, f)

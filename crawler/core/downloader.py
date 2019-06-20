@@ -12,14 +12,15 @@ from twisted.internet import defer
 from crawler.utils.defer import succeed, fail
 from twisted.web import http
 from requests_threads import AsyncSession
-
+import requests
 logger = logging.getLogger('crawler')
 
 
 class Downloader(object):
     def __init__(self, crawler):
-        logger.debug("New Downloader")
+        logger.debug(f"New Downloader with spider {crawler.spider.name}")
         self.session = AsyncSession(n=100)
+        self.crawler = crawler
 
     def download(self, request):
         logger.debug(f"DOWNLOADER downloading {request.method} {request.url}")
@@ -38,6 +39,13 @@ class Downloader(object):
             return fail(ValueError(f"Undefined method found: {request.method}"))
         return d.addCallback(self.send_response, request)
 
+    def start(self):
+        logger.debug("Starting Downloader")
+        for c in self.crawler.spider.preload_cookies:
+            logger.debug(f"Downloader adding preloading cookie: {c['name']} for {c['domain']}")
+            cookie = requests.cookies.create_cookie(domain=c['domain'], name=c['name'], value=c['value'])
+            self.session.cookies.set_cookie(cookie)
+
     def send_response(self, response, request):
         return Response(
             request=request,
@@ -48,6 +56,7 @@ class Downloader(object):
             cookies=response.cookies,
             encoding=response.encoding,
             headers=response.headers,
+            meta=request.meta
         )
 
     def is_busy(self):
