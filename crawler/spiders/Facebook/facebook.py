@@ -6,14 +6,12 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
-import logging
-import os
-from crawler.utils.webbrowser import open_page
+import logging, os
 from crawler import config
 from crawler.spiders import ISpider
 from crawler.http import Request
+from crawler.utils import Outcome, open_page
 from crawler.spiders.Facebook import albums
-
 logger = logging.getLogger('crawler')
 
 
@@ -45,7 +43,7 @@ class Facebook(ISpider):
                 preload_cookies.append(
                     {'name': c.name, 'value': c.value, 'domain': c.domain})
         self.set_preload_cookies(preload_cookies)
-        for req in self.parse_user_page():
+        for req in self.parse_user_page(self.start_user):
             yield req
 
     def try_login(self, res):
@@ -61,11 +59,11 @@ class Facebook(ISpider):
             else:
                 logger.info(
                     "Already logged in to facebook thanks to the preloaded cookies")
-                for req in self.parse_user_page():
+                for req in self.parse_user_page(self.start_user):
                     yield req
         yield Request('https://m.facebook.com/home.php', callback=is_logged_in)
 
-    def parse_user_page(self):
+    def parse_user_page(self, userID):
         def extract_data(res):
             data = {'user': res.meta['user'],
                     'friends_link': None,
@@ -110,7 +108,7 @@ class Facebook(ISpider):
                                    for i in life_events]
             for req in self.extract_profile_data(data):
                 yield req
-        yield Request(f'https://m.facebook.com/{self.start_user}', callback=extract_data, meta={"user": self.start_user})
+        yield Request(f'https://m.facebook.com/{userID}', callback=extract_data, meta={"user": userID})
 
     def extract_profile_data(self, data):
         # yield Request(f'https://m.facebook.com/{userID}/friends',

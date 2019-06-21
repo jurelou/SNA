@@ -16,6 +16,7 @@ class Scheduler(object):
     def __init__(self, crawler):
         logger.debug("New Scheduler")
         self.q = queue.Queue()
+        self.seen_requests = set()
         self.crawler = crawler
 
     def start(self):
@@ -26,9 +27,12 @@ class Scheduler(object):
         pass
 
     def enqueue_request(self, request):
-        print("-------------", hash(request))
+        if hash(request) in self.seen_requests:
+            logger.debug(f"Request : {request.url} {request.meta} have already been requested.")
+            return False
         logger.debug(f"Pushing to scheduler request: {request.url} {request.meta}")
         self.q.put(request)
+        self.seen_requests.add(hash(request))
         return True
 
     def dequeue_request(self):

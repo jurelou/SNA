@@ -5,6 +5,7 @@
 # meet someday, and you think this stuff is worth it, you can
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
+import urllib.parse as urlparse
 
 
 class Request(object):
@@ -15,7 +16,6 @@ class Request(object):
             callback=None,
             errback=None,
             body=None,
-            params=None,
             cookies=None,
             allow_redirects=True,
             meta=None):
@@ -24,20 +24,20 @@ class Request(object):
         self.callback = callback
         self.errback = errback
         self.body = body
-        self.params = params
+        self.parsed_url = urlparse.urlparse(url)
+        self.params = urlparse.parse_qs(self.parsed_url.query)
         self.cookies = cookies
         self.allow_redirects = allow_redirects
         self.meta = meta
 
     def __eq__(self, other):
-        return self.url == other.url and self.method == other.method and self.body == other.body and self.params == other.params and self.allow_redirects == other.allow_redirects
+        return self.url == other.url and self.method == other.method and self.body == other.body and self.allow_redirects == other.allow_redirects
 
     def __hash__(self):
         return hash(
             (self.url,
              self.method,
              self.body,
-             self.params,
              self.allow_redirects))
 
     @property

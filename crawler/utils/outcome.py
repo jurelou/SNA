@@ -6,6 +6,19 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
-from crawler.utils.logger import initLogger
-from crawler.utils.webbrowser import open_page
-from crawler.utils.outcome import Outcome, OutcomeManager
+class Outcome(object):
+	def __init__(self, arg):
+		self.arg = arg
+
+class OutcomeManager(object):
+	def __init__(self):
+		self.spider = None
+
+	def start(self, spider):
+		self.spider = spider
+
+	def store(self, outcome):
+		pass
+
+	def close(self):
+		pass

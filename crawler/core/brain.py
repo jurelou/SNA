@@ -13,6 +13,7 @@ from crawler.core.scraper import Scraper
 from crawler.http import Response, Request
 from crawler.core.scheduler import Scheduler
 from crawler.core.downloader import Downloader
+from crawler.utils import OutcomeManager
 
 logger = logging.getLogger('crawler')
 
@@ -30,11 +31,13 @@ class Brain(object):
         self.downloader = Downloader(crawler)
         self.scraper = Scraper(crawler)
         self.scheduler = Scheduler(crawler)
+        self.outcomeManager = OutcomeManager()
 
     def start(self):
         self.scheduler.start()
         self.scraper.start(self.spider)
         self.downloader.start()
+        self.outcomeManager.start(self.spider)
         reactor.callLater(0, self.next)
 
     @defer.inlineCallbacks
@@ -98,6 +101,9 @@ class Brain(object):
         self.scheduler.enqueue_request(request)
         reactor.callLater(0, self.next)
 
+    def store(self, outcome):
+        self.outcomeManager.store(outcome)
+
     def close(self):
         logger.debug('Close Brain')
         pass
@@ -125,5 +131,10 @@ class Brain(object):
         d.addBoth(lambda _: self.scheduler.close())
         d.addErrback(lambda _: logger.error(
             'ERROR in BRAIN after scheduler.close'))
+
+        d.addBoth(lambda _: self.outcomeManager.close())
+        d.addErrback(lambda _: logger.error(
+            f'ERROR in BRAIN after outcomeManager.close {_}'))
+
         d.addBoth(lambda _: self.close_callback())
         return d

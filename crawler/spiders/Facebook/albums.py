@@ -6,8 +6,8 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
-from crawler.utils.webbrowser import open_page
 from crawler.http import Request
+from crawler.utils import open_page, Outcome
 
 
 def extract_likes(response):
@@ -16,7 +16,8 @@ def extract_likes(response):
         for like in likes:
             if like.text:
                 # TODO: store result
-                print("++++", response.meta, like.text, like.attrib["href"])
+                #print("++++", response.meta, like.text, like.attrib["href"])
+                yield Outcome(response.meta)
             pass
         see_more = response.body.xpath('//li/table/tbody/tr/td/div/a')
         if see_more:
@@ -31,19 +32,25 @@ def extract_likes(response):
 
 
 def extract_picture_data(response):
+    print("=>", response)
+    picture = response.body.xpath('//div/img')[0].attrib['src']
     likes = response.body.xpath(
         '//div[@id="MPhotoContent"]/div/div[not(@class="msg")]/div/div/a')
-    if likes:
-        yield Request('https://mbasic.facebook.com' + likes[0].attrib['href'], callback=extract_likes, meta=dict({'likes_from': 'album.picture'}, **response.meta))
+    """
     comments = response.body.xpath(
+        '//div[@id="MPhotoContent"]/div/div/div/div/div/div/div[not(span[@class="async_cmt_like"]) and not(@class="mUFICommentContent")]')
+    """
+    comments_authors = response.body.xpath(
         '//div[@id="MPhotoContent"]/div/div[not(@class="msg")]/div/div/div/div/h3/a')
     comments_like = response.body.xpath('//div/div/div/span/span/a')
-    """
-        comment_text = response.body.xpath('//div[@id="MPhotoContent"]/div/div[not(@class="msg")]/div/div/div/div/div[not(@class="mUFICommentContent")]/text()')
-        print("->>>>", comment_text)
-    """
-    for comment in comments:
-        print("!!!", response.meta, comment.text, comment.attrib['href'])
+
+    if likes:
+        yield Request('https://mbasic.facebook.com' + likes[0].attrib['href'], callback=extract_likes, meta=dict({'likes_from': 'album.picture'}, **response.meta))
+    
+    for authors in comments_authors:
+        #TODO: store result
+        #print("!!!", response.meta, authors.text, authors.attrib['href'])
+        pass
     for like in comments_like:
         yield Request('https://mbasic.facebook.com' + like.attrib['href'], callback=extract_likes, meta=dict({'likes_from': 'album.picture.comment'}, **response.meta))
 
@@ -54,7 +61,6 @@ def extract_album_data(response):
     comments = response.body.xpath(
         '//tr/td/div/div/div/div/div/div/div/div/h3/a')
     comments_like = response.body.xpath('//div/div/div/div/span/span/a')
-
     def goto_next_pictures_page(response):
         pictures = response.body.xpath('//div[@id="thumbnail_area"]/a')
         for picture in pictures:
@@ -68,7 +74,8 @@ def extract_album_data(response):
         yield Request('https://mbasic.facebook.com' + likes[0].attrib['href'], callback=extract_likes, meta=dict({'likes_from': 'album'}, **response.meta))
     for comment in comments:
         # TODO: store result
-        print("@@@", response.meta, comment.text, comment.attrib['href'])
+        #print("@@@", response.meta, comment.text, comment.attrib['href'])
+        pass
     for like in comments_like:
         yield Request('https://mbasic.facebook.com' + like.attrib['href'], callback=extract_likes, meta=dict({'likes_from': 'album.comment'}, **response.meta))
 
@@ -77,7 +84,8 @@ def extract_albums_data(response):
     def extract_albums(res):
         albums = res.body.xpath('//span/a')
         for album in albums:
-            print(f'++ Found album {album.text}')
+            #TODO: store result
+            #print(f'++ Found album {album.text}')
             yield Request('https://m.facebook.com' + album.attrib['href'], callback=extract_album_data, meta=dict({'album': album.text}, **res.meta))
 
     def goto_nextpage(res):

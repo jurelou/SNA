@@ -13,6 +13,7 @@ from twisted.python.failure import Failure
 from twisted.internet import defer, task, reactor
 from crawler.utils.defer import succeed
 from crawler.http import Request, Response
+from crawler.utils import Outcome
 
 logger = logging.getLogger('crawler')
 
@@ -121,6 +122,9 @@ class Scraper(object):
         if isinstance(output, Request):
             logger.debug(f"SCRAPER got request from spider: {output.url}")
             self.crawler.brain.crawl(output)
+        elif isinstance(output, Outcome):
+            logger.debug(f"SCRAPER got outcome for request: {request.url}")
+            self.crawler.brain.store(output)
         elif output is None:
             logger.debug("SCRAPER got EMPTY request from spider")
             pass

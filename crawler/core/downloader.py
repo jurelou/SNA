@@ -27,12 +27,12 @@ class Downloader(object):
         if request.method is "GET":
             d = self.session.get(
                 request.url,
-                params=request.params,
+                #params=request.params,
                 allow_redirects=request.allow_redirects)
         elif request.method is "POST":
             d = self.session.post(
                 request.url,
-                params=request.params,
+                #params=request.params,
                 data=request.body,
                 allow_redirects=request.allow_redirects)
         else:

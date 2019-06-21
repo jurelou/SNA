@@ -30,7 +30,7 @@ class Response(object):
         self.meta = meta
 
     def __str__(self):
-        ret = f"\nRequest: {self._status}\nrequest: {self.request.url}\nHeaders:\n\t"
+        ret = f"\nRequest: {self._status}\nrequest: {self.request.url}\n\t{self.request.params}\nResponse\nHeaders:\n\t"
         for h in self._headers:
             ret += f"{h} -> {self._headers[h]}\n\t"
         ret += "\nCookies:\n\t" + str(self._cookies)
