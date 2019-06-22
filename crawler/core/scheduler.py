@@ -12,19 +12,20 @@ import queue
 logger = logging.getLogger('crawler')
 
 
-class Scheduler(object):
+class Scheduler():
     def __init__(self, crawler):
         logger.debug("New Scheduler")
         self.q = queue.Queue()
         self.seen_requests = set()
         self.crawler = crawler
 
-    def start(self):
+    @staticmethod
+    def start():
         logger.debug("Start Scheduler")
 
-    def close(self):
+    @staticmethod
+    def close():
         logger.debug("Close Scheduler")
-        pass
 
     def enqueue_request(self, request):
         if hash(request) in self.seen_requests:

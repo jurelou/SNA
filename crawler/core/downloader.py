@@ -7,16 +7,15 @@
 # ------------------------------------------------------------
 
 import logging
-from crawler.http import Response
-from twisted.internet import defer
-from crawler.utils.defer import succeed, fail
-from twisted.web import http
-from requests_threads import AsyncSession
 import requests
+from requests_threads import AsyncSession
+from crawler.http import Response
+from twisted.internet import defer, reactor
+
 logger = logging.getLogger('crawler')
 
 
-class Downloader(object):
+class Downloader():
     def __init__(self, crawler):
         logger.debug(f"New Downloader with spider {crawler.spider.name}")
         self.session = AsyncSession(n=100)
@@ -24,29 +23,35 @@ class Downloader(object):
 
     def download(self, request):
         logger.debug(f"DOWNLOADER downloading {request.method} {request.url}")
-        if request.method is "GET":
+        if request.method == "GET":
             d = self.session.get(
                 request.url,
                 #params=request.params,
                 allow_redirects=request.allow_redirects)
-        elif request.method is "POST":
+        elif request.method == "POST":
             d = self.session.post(
                 request.url,
                 #params=request.params,
                 data=request.body,
                 allow_redirects=request.allow_redirects)
         else:
-            return fail(ValueError(f"Undefined method found: {request.method}"))
+            d = defer.Deferred()
+            reactor.callLater(0, d.errback, ValueError(f"Undefined method found: {request.method}"))
+            return d            
         return d.addCallback(self.send_response, request)
 
     def start(self):
         logger.debug("Starting Downloader")
         for c in self.crawler.spider.preload_cookies:
             logger.debug(f"Downloader adding preloading cookie: {c['name']} for {c['domain']}")
-            cookie = requests.cookies.create_cookie(domain=c['domain'], name=c['name'], value=c['value'])
+            cookie = requests.cookies.create_cookie(
+                domain=c['domain'],
+                name=c['name'],
+                value=c['value'])
             self.session.cookies.set_cookie(cookie)
 
-    def send_response(self, response, request):
+    @staticmethod
+    def send_response(response, request):
         return Response(
             request=request,
             status=(
@@ -59,8 +64,10 @@ class Downloader(object):
             meta=request.meta
         )
 
-    def is_busy(self):
+    @staticmethod
+    def is_busy():
         return False
 
-    def close(self):
+    @staticmethod
+    def close():
         logger.debug("Close Downloader")

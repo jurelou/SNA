@@ -6,19 +6,21 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
-class Outcome(object):
-	def __init__(self, arg):
-		self.arg = arg
 
-class OutcomeManager(object):
-	def __init__(self):
-		self.spider = None
+class Outcome():
+    def __init__(self, arg):
+        self.arg = arg
 
-	def start(self, spider):
-		self.spider = spider
 
-	def store(self, outcome):
-		pass
+class OutcomeManager():
+    def __init__(self):
+        self.spider = None
 
-	def close(self):
-		pass
+    def start(self, spider):
+        self.spider = spider
+
+    def store(self, outcome):
+        pass
+
+    def close(self):
+        pass

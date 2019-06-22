@@ -7,18 +7,17 @@
 # ------------------------------------------------------------
 
 import logging
-import lxml.html
 from collections import deque
+import lxml.html
 from twisted.python.failure import Failure
 from twisted.internet import defer, task, reactor
-from crawler.utils.defer import succeed
-from crawler.http import Request, Response
+from crawler.http import Request
 from crawler.utils import Outcome
 
 logger = logging.getLogger('crawler')
 
 
-class Scraper(object):
+class Scraper():
     def __init__(self, crawler):
         logger.debug("New Scrapper")
         self.max_concurency = 100
@@ -36,9 +35,9 @@ class Scraper(object):
             return True
         return False
 
-    def close(self):
+    @staticmethod
+    def close():
         logger.debug("Close Scrapper")
-        return
 
     def try_close(self):
         ret = not (self.queue or self.queue_in_progress)
@@ -91,11 +90,12 @@ class Scraper(object):
         d.addErrback(logger.fatal, "ERROR in spider callback function:")
         return d
 
-    def handle_spider_error(self, err, request, response):
+    def handle_spider_error(self, err, request):
         logger.fatal(f"ERROR in SCRAPPER from spider request: {request.url} {err}")
         self.crawler.brain.stop()
 
-    def iter(self, iterable, errback, request, response):
+    @staticmethod
+    def iter(iterable, errback, request, response):
         it = iter(iterable)
         while True:
             try:
@@ -107,18 +107,20 @@ class Scraper(object):
 
     def handle_spider_output(self, res, request, response):
         if res is None:
-            return succeed(None)
+            d = defer.Deferred()
+            reactor.callLater(0, d.callback, None)
+            return d
         elif not isinstance(res, (dict, bytes)) and hasattr(res, '__iter__'):
             pass
         else:
             res = [res]
         it = self.iter(res, self.handle_spider_error, request, response)
         coop = task.Cooperator()
-        work = (self.from_spider(output, request, response) for output in it)
+        work = (self.from_spider(output, request) for output in it)
         return defer.DeferredList([coop.coiterate(work)
                                    for _ in range(self.max_concurency)])
 
-    def from_spider(self, output, request, response):
+    def from_spider(self, output, request):
         if isinstance(output, Request):
             logger.debug(f"SCRAPER got request from spider: {output.url}")
             self.crawler.brain.crawl(output)
@@ -127,6 +129,5 @@ class Scraper(object):
             self.crawler.brain.store(output)
         elif output is None:
             logger.debug("SCRAPER got EMPTY request from spider")
-            pass
         else:
             logger.fatal(f"ERROR in SCRAPPER got strange spider output {output}")

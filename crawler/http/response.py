@@ -9,7 +9,7 @@
 from crawler.http import Request
 
 
-class Response(object):
+class Response():
     def __init__(
             self,
             status=(

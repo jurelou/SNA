@@ -8,7 +8,7 @@
 import urllib.parse as urlparse
 
 
-class Request(object):
+class Request():
     def __init__(
             self,
             url,

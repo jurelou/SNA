@@ -6,11 +6,11 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
-import logging, os
+import logging
 from crawler import config
 from crawler.spiders import ISpider
 from crawler.http import Request
-from crawler.utils import Outcome, open_page
+#from crawler.utils import Outcome, open_page
 from crawler.spiders.Facebook import albums
 logger = logging.getLogger('crawler')
 
@@ -29,7 +29,8 @@ class Facebook(ISpider):
             errback=self.error)
         self.start_user = "margot.laval.9"
 
-    def error(self, err):
+    @staticmethod
+    def error(err):
         logger.fatal(f"In facebook spider: {err}")
 
     def login(self, response):
@@ -48,7 +49,7 @@ class Facebook(ISpider):
 
     def try_login(self, res):
         def is_logged_in(response):
-            csrf_token = self.fb_dtsg = res.body.xpath(
+            csrf_token = self.fb_dtsg = response.body.xpath(
                 '//input[@name="fb_dtsg"]/@value')
             if not csrf_token:
                 logger.info("Need to loggin to facebook")

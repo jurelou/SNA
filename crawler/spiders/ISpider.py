@@ -8,13 +8,11 @@
 
 import os
 import pickle
-from crawler.http import Request
 
-
-class ISpider(object):
+class ISpider():
     lxml = False
 
-    def __init__(self):
+    def __init__(self, name=None):
         self.cookies_file = os.path.dirname(
             os.path.realpath(__file__)) + "/.auth_cookies"
         if not hasattr(self, 'name'):
@@ -39,7 +37,8 @@ class ISpider(object):
             raise ValueError(f'Preload cookies need an iterable, found {type(value)}')
         for v in value:
             if not all(k in v for k in ("name", "value", "domain")):
-                raise ValueError(f'Preload cookies need an object with name, value and domain keys, found{value}')
+                raise ValueError(f'Preload cookies need an object with name, \
+                    value and domain keys, found{value}')
         if exists:
             with open(self.cookies_file, 'rb') as f:
                 try:

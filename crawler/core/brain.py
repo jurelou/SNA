@@ -8,9 +8,8 @@
 
 import logging
 from twisted.internet import defer
-from twisted.internet import reactor, error
+from twisted.internet import reactor
 from crawler.core.scraper import Scraper
-from crawler.http import Response, Request
 from crawler.core.scheduler import Scheduler
 from crawler.core.downloader import Downloader
 from crawler.utils import OutcomeManager
@@ -18,15 +17,13 @@ from crawler.utils import OutcomeManager
 logger = logging.getLogger('crawler')
 
 
-class Brain(object):
+class Brain():
     def __init__(self, crawler, close_callback):
         logger.debug('New Brain')
         self.spider = crawler.spider
         self.running = False
         self.closing = False
-        self.entrypoint = self.spider.entrypoint
         self.inprogress = set()
-        self.crawler = crawler
         self.close_callback = close_callback
         self.downloader = Downloader(crawler)
         self.scraper = Scraper(crawler)
@@ -59,9 +56,9 @@ class Brain(object):
         while not self.is_busy():
             if not self.from_scheduler():
                 break
-        if self.entrypoint and not self.is_busy():
-            self.crawl(self.entrypoint)
-            self.entrypoint = None
+        if self.spider.entrypoint and not self.is_busy():
+            self.crawl(self.spider.entrypoint)
+            self.spider.entrypoint = None
 
     def is_busy(self):
         ret = not self.running or self.closing or self.downloader.is_busy() or self.scraper.is_busy()
@@ -88,11 +85,13 @@ class Brain(object):
         d.addBoth(lambda _: self.try_close())
         return d.addBoth(lambda _: reactor.callLater(0, self.next))
 
-    def scrapper_error(self, err):
+    @staticmethod
+    def scrapper_error(err):
         logger.error(f"After scrapper.enqueue_scrape: {err}")
         return err
 
-    def downloader_error(self, err):
+    @staticmethod
+    def downloader_error(err):
         logger.error(f"After downloader.download: {err}")
         return err
 
@@ -104,16 +103,16 @@ class Brain(object):
     def store(self, outcome):
         self.outcomeManager.store(outcome)
 
-    def close(self):
+    @staticmethod
+    def close():
         logger.debug('Close Brain')
-        pass
 
     def stop(self):
         logger.debug('Stop Brain')
         if not self.running:
-            return
+            return None
         self.running = False
-        d = self.stop_all()
+        self.stop_all()
         return self._closewait.callback(None)
 
     def stop_all(self):

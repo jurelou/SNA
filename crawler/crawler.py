@@ -14,7 +14,7 @@ from crawler.core.brain import Brain
 logger = logging.getLogger('crawler')
 
 
-class Crawler(object):
+class Crawler():
     def __init__(self, spider):
         logger.info(f'New Crawler with spider: {spider.name}')
         self.spider = spider
@@ -37,7 +37,7 @@ class Crawler(object):
         yield defer.maybeDeferred(self.brain.stop)
 
 
-class CrawlerManager(object):
+class CrawlerManager():
     def __init__(self):
         signal.signal(signal.SIGINT, self.signal_handler)
         self.crawlers = set()
@@ -59,6 +59,7 @@ class CrawlerManager(object):
         self.deffered_crawlers.add(d)
 
         def _then(result):
+            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             self.crawlers.discard(crawler)
             self.deffered_crawlers.discard(d)
             return result
@@ -83,6 +84,5 @@ class CrawlerManager(object):
                 reactor.stop()
             except RuntimeError:
                 pass
-            finally:
-                return defer.succeed(res)
+            return defer.succeed(res)
         return d.addBoth(stop_reactor)
