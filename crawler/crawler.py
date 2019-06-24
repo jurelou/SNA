@@ -59,7 +59,6 @@ class CrawlerManager():
         self.deffered_crawlers.add(d)
 
         def _then(result):
-            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             self.crawlers.discard(crawler)
             self.deffered_crawlers.discard(d)
             return result

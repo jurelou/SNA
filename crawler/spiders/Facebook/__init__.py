@@ -7,3 +7,4 @@
 # ------------------------------------------------------------
 
 import crawler.spiders.Facebook.albums
+import crawler.spiders.Facebook.wall

@@ -10,8 +10,8 @@ import logging
 from crawler import config
 from crawler.spiders import ISpider
 from crawler.http import Request
-#from crawler.utils import Outcome, open_page
-from crawler.spiders.Facebook import albums
+from crawler.utils import Outcome, open_page
+from crawler.spiders.Facebook import albums, wall
 logger = logging.getLogger('crawler')
 
 
@@ -22,7 +22,6 @@ class Facebook(ISpider):
     def __init__(self):
         super().__init__()
         self.fb_dtsg = None
-        self.base_url = 'https://m.facebook.com'
         self.entrypoint = Request(
             "https://m.facebook.com",
             callback=self.try_login,
@@ -67,26 +66,23 @@ class Facebook(ISpider):
     def parse_user_page(self, userID):
         def extract_data(res):
             data = {'user': res.meta['user'],
-                    'friends_link': None,
-                    'photos_link': None,
-                    'likes_link': None,
                     'family': {},
                     'living': {},
                     'work': {},
                     'education': {},
                     'life_events': {}
                     }
+            timeline_link = res.body.xpath('//div/a[.="Timeline"]')
+            data['timeline_link'] = timeline_link[0].attrib['href'] if timeline_link else None
+
             friends_link = res.body.xpath('//div/a[.="Friends"]')
-            if friends_link:
-                data['friends_link'] = friends_link[0].attrib['href']
+            data['friends_link'] = friends_link[0].attrib['href'] if friends_link else None
 
             photos_link = res.body.xpath('//div/a[.="Photos"]')
-            if photos_link:
-                data['photos_link'] = photos_link[0].attrib['href']
+            data['photos_link'] = photos_link[0].attrib['href'] if photos_link else None
 
             likes_link = res.body.xpath('//div/a[.="Likes"]')
-            if likes_link:
-                data['likes_link'] = likes_link[0].attrib['href']
+            data['likes_link'] = likes_link[0].attrib['href'] if likes_link else None
 
             family = res.body.xpath('//div[@id="family"]/div/div/div/div/h3/a')
             data['family'] = [f.attrib['href'] for f in family]
@@ -107,15 +103,17 @@ class Facebook(ISpider):
                 '//div[@id="year-overviews"]/div/div/div/div/div/div/div/a')
             data['life_events'] = [(i.text, i.attrib['href'])
                                    for i in life_events]
-            for req in self.extract_profile_data(data):
+            for req in self.extract_user_data(res, data):
                 yield req
         yield Request(f'https://m.facebook.com/{userID}', callback=extract_data, meta={"user": userID})
 
-    def extract_profile_data(self, data):
+    def extract_user_data(self, response, profile_data):
         # yield Request(f'https://m.facebook.com/{userID}/friends',
         # callback=self.parse_friends_page)
-        if data['photos_link']:
-            yield Request(self.base_url + data['photos_link'], callback=albums.extract_albums_data, meta={'user': data['user']})
+        if profile_data['timeline_link']:
+            yield Request('https://mbasic.facebook.com/'  + profile_data['timeline_link'], callback=wall.extract_posts_data, meta=response.meta)
+        if profile_data['photos_link']:
+            yield Request('https://m.facebook.com' + profile_data['photos_link'], callback=albums.extract_albums_data, meta=response.meta)
     """
     def parse_friends_page(self, res):
         def extract_friends(page):
@@ -130,5 +128,5 @@ class Facebook(ISpider):
         extract_friends(res.body)
         next_link = res.body.xpath('//div[@id="m_more_friends"]/a')
         if next_link:
-            yield Request(self.base_url + next_link[0].attrib['href'], callback=self.parse_friends_page)
+            yield Request('https://m.facebook.com' + next_link[0].attrib['href'], callback=self.parse_friends_page)
     """

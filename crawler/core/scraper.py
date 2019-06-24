@@ -90,7 +90,7 @@ class Scraper():
         d.addErrback(logger.fatal, "ERROR in spider callback function:")
         return d
 
-    def handle_spider_error(self, err, request):
+    def handle_spider_error(self, err, request, response):
         logger.fatal(f"ERROR in SCRAPPER from spider request: {request.url} {err}")
         self.crawler.brain.stop()
 
