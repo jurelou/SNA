@@ -6,11 +6,15 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
+import logging
+
+logger = logging.getLogger('sna')
+
 
 class Outcome():
-    def __init__(self, arg):
-        self.arg = arg
-
+    def __init__(self, data, request=None):
+        self.data = data
+        self.request = request
 
 class OutcomeManager():
     def __init__(self):
@@ -20,7 +24,7 @@ class OutcomeManager():
         self.spider = spider
 
     def store(self, outcome):
-        pass
+        logger.info("OutcomeManager store()")
 
     def close(self):
         pass

@@ -10,9 +10,11 @@ import logging
 from crawler import config
 from crawler.spiders import ISpider
 from crawler.http import Request
-from crawler.utils import Outcome, open_page
+from crawler.utils import open_page
 from crawler.spiders.Facebook import albums, wall
-logger = logging.getLogger('crawler')
+from crawler.core import Outcome
+
+logger = logging.getLogger('sna')
 
 
 class Facebook(ISpider):
@@ -110,10 +112,14 @@ class Facebook(ISpider):
     def extract_user_data(self, response, profile_data):
         # yield Request(f'https://m.facebook.com/{userID}/friends',
         # callback=self.parse_friends_page)
+        yield Outcome("salut")
+        """
         if profile_data['timeline_link']:
             yield Request('https://mbasic.facebook.com/'  + profile_data['timeline_link'], callback=wall.extract_posts_data, meta=response.meta)
+
         if profile_data['photos_link']:
             yield Request('https://m.facebook.com' + profile_data['photos_link'], callback=albums.extract_albums_data, meta=response.meta)
+        """
     """
     def parse_friends_page(self, res):
         def extract_friends(page):

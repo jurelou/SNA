@@ -11,7 +11,7 @@ import signal
 from twisted.internet import reactor, defer
 from crawler.core.brain import Brain
 
-logger = logging.getLogger('crawler')
+logger = logging.getLogger('sna')
 
 
 class Crawler():

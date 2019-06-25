@@ -6,13 +6,8 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
-import logging
-
-def initLogger():
-    logger = logging.getLogger('sna')
-    logger.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-    formatter = logging.Formatter('[%(levelname)-6s]  %(message)s  (\033[1m%(filename)s\033[0m:%(lineno)d)')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+from crawler.core.outcome import Outcome
+from crawler.core.outcome import OutcomeManager
+from crawler.core.scraper import Scraper
+from crawler.core.scheduler import Scheduler
+from crawler.core.downloader import Downloader

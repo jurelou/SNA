@@ -9,13 +9,11 @@
 import logging
 from twisted.internet import defer
 from twisted.internet import reactor
-from crawler.core.scraper import Scraper
-from crawler.core.scheduler import Scheduler
-from crawler.core.downloader import Downloader
-from crawler.utils import OutcomeManager
+from crawler.core import Scraper
+from crawler.core import Scheduler
+from crawler.core import Downloader
 
-logger = logging.getLogger('crawler')
-
+logger = logging.getLogger('sna')
 
 class Brain():
     def __init__(self, crawler, close_callback):
@@ -28,13 +26,11 @@ class Brain():
         self.downloader = Downloader(crawler)
         self.scraper = Scraper(crawler)
         self.scheduler = Scheduler(crawler)
-        self.outcomeManager = OutcomeManager()
 
     def start(self):
         self.scheduler.start()
         self.scraper.start(self.spider)
         self.downloader.start()
-        self.outcomeManager.start(self.spider)
         reactor.callLater(0, self.next)
 
     @defer.inlineCallbacks
@@ -100,9 +96,6 @@ class Brain():
         self.scheduler.enqueue_request(request)
         reactor.callLater(0, self.next)
 
-    def store(self, outcome):
-        self.outcomeManager.store(outcome)
-
     @staticmethod
     def close():
         logger.debug('Close Brain')
@@ -130,10 +123,5 @@ class Brain():
         d.addBoth(lambda _: self.scheduler.close())
         d.addErrback(lambda _: logger.error(
             'ERROR in BRAIN after scheduler.close'))
-
-        d.addBoth(lambda _: self.outcomeManager.close())
-        d.addErrback(lambda _: logger.error(
-            f'ERROR in BRAIN after outcomeManager.close {_}'))
-
         d.addBoth(lambda _: self.close_callback())
         return d

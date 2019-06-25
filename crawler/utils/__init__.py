@@ -8,4 +8,3 @@
 
 from crawler.utils.logger import initLogger
 from crawler.utils.webbrowser import open_page
-from crawler.utils.outcome import Outcome, OutcomeManager

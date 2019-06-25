@@ -7,7 +7,8 @@
 # ------------------------------------------------------------
 
 from crawler.http import Request
-from crawler.utils import open_page, Outcome
+from crawler.utils import open_page
+from crawler.core import Outcome
 
 
 def extract_likes(response):

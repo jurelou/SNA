@@ -10,9 +10,10 @@ import logging
 import requests
 from requests_threads import AsyncSession
 from crawler.http import Response
-from twisted.internet import defer, reactor
+from twisted.internet import defer
+from twisted.internet import reactor
 
-logger = logging.getLogger('crawler')
+logger = logging.getLogger('sna')
 
 
 class Downloader():

@@ -9,7 +9,7 @@
 import logging
 import queue
 
-logger = logging.getLogger('crawler')
+logger = logging.getLogger('sna')
 
 
 class Scheduler():

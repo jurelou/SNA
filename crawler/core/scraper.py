@@ -7,14 +7,17 @@
 # ------------------------------------------------------------
 
 import logging
-from collections import deque
 import lxml.html
+from collections import deque
 from twisted.python.failure import Failure
-from twisted.internet import defer, task, reactor
+from twisted.internet import defer
+from twisted.internet import task
+from twisted.internet import reactor
 from crawler.http import Request
-from crawler.utils import Outcome
+from crawler.core import Outcome
+from crawler.core import OutcomeManager
 
-logger = logging.getLogger('crawler')
+logger = logging.getLogger('sna')
 
 
 class Scraper():
@@ -25,9 +28,11 @@ class Scraper():
         self.queue = deque()
         self.queue_in_progress = set()
         self.crawler = crawler
+        self.outcomeManager = OutcomeManager()
 
     def start(self, spider):
         self.spider = spider
+        self.outcomeManager.start(spider)
 
     def is_busy(self):
         if len(self.queue) > self.max_concurency:
@@ -81,7 +86,6 @@ class Scraper():
         def format_response(response):
             if not self.spider.lxml or not response.body:
                 return response
-            logger.debug("Formating response with LXML")
             response.body = lxml.html.fromstring(response.body)
             return response
         d.addCallback(format_response)
@@ -126,8 +130,8 @@ class Scraper():
             self.crawler.brain.crawl(output)
         elif isinstance(output, Outcome):
             logger.debug(f"SCRAPER got outcome for request: {request.url}")
-            self.crawler.brain.store(output)
+            self.outcomeManager.store(output)
         elif output is None:
-            logger.debug("SCRAPER got EMPTY request from spider")
+            logger.info("SCRAPER got EMPTY request from spider")
         else:
             logger.fatal(f"ERROR in SCRAPPER got strange spider output {output}")
