@@ -7,24 +7,21 @@
 # ------------------------------------------------------------
 
 import logging
+from neo4j import GraphDatabase
+from crawler import config
 
 logger = logging.getLogger('sna')
 
 
-class Outcome():
-    def __init__(self, data, request=None):
-        self.data = data
-        self.request = request
-
-class OutcomeManager():
+class GraphDB():
     def __init__(self):
-        self.spider = None
-
-    def start(self, spider):
-        self.spider = spider
-
-    def store(self, outcome):
-        logger.info("OutcomeManager store()")
+        driver = GraphDatabase.driver(config.NEO4J_CREDENTIALS[0], auth=(config.NEO4J_CREDENTIALS[1], config.NEO4J_CREDENTIALS[2]))
+        self.session = driver.session()
+        logger.info("New GraphDB")
+    
+    def store(self, relation):
+        print("----------- ", relation)
 
     def close(self):
-        pass
+        self.session.close()
+        logger.info("close GraphDB")        

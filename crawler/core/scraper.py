@@ -14,9 +14,13 @@ from twisted.internet import defer
 from twisted.internet import task
 from twisted.internet import reactor
 from crawler.http import Request
+from crawler.storage import Database
+from crawler.storage.schema import Relation
+
+"""
 from crawler.core import Outcome
 from crawler.core import OutcomeManager
-
+"""
 logger = logging.getLogger('sna')
 
 
@@ -28,11 +32,11 @@ class Scraper():
         self.queue = deque()
         self.queue_in_progress = set()
         self.crawler = crawler
-        self.outcomeManager = OutcomeManager()
+        self.database = Database()
 
     def start(self, spider):
         self.spider = spider
-        self.outcomeManager.start(spider)
+        self.database.start()
 
     def is_busy(self):
         if len(self.queue) > self.max_concurency:
@@ -128,9 +132,9 @@ class Scraper():
         if isinstance(output, Request):
             logger.debug(f"SCRAPER got request from spider: {output.url}")
             self.crawler.brain.crawl(output)
-        elif isinstance(output, Outcome):
-            logger.debug(f"SCRAPER got outcome for request: {request.url}")
-            self.outcomeManager.store(output)
+        elif isinstance(output, Relation):
+            logger.debug(f"SCRAPER got Relation for request: {request.url}")
+            self.database.store_relation(output)          
         elif output is None:
             logger.info("SCRAPER got EMPTY request from spider")
         else:

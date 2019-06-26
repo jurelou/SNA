@@ -8,7 +8,6 @@
 
 from crawler.http import Request
 from crawler.utils import open_page
-from crawler.core import Outcome
 
 
 def extract_likes(response):

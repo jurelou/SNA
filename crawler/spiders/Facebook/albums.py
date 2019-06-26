@@ -8,7 +8,6 @@
 
 from crawler.http import Request
 from crawler.utils import open_page
-from crawler.core import Outcome
 
 
 def extract_likes(response):
@@ -18,7 +17,7 @@ def extract_likes(response):
             if like.text:
                 # TODO: store result
                 #print("++++", response.meta, like.text, like.attrib["href"])
-                yield Outcome(response.meta)
+                pass
             pass
         see_more = response.body.xpath('//li/table/tbody/tr/td/div/a')
         if see_more:

@@ -6,6 +6,5 @@
 # buy me a beer in return. Louis Jurczyk
 # ------------------------------------------------------------
 
-from crawler.core.scraper import Scraper
-from crawler.core.scheduler import Scheduler
-from crawler.core.downloader import Downloader
+from crawler.storage.graphDB import GraphDB
+from crawler.storage.database import Database
