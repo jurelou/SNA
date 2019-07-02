@@ -34,11 +34,17 @@ class Request():
         return self.url == other.url and self.method == other.method and self.body == other.body and self.allow_redirects == other.allow_redirects
 
     def __hash__(self):
-        return hash(
-            (self.url,
-             self.method,
-             self.body,
-             self.allow_redirects))
+        if self.body:
+            return hash(
+                (self.url,
+                 self.method,
+                 frozenset(self.body.items()),
+                 self.allow_redirects))
+        else:
+            return hash(
+                (self.url,
+                 self.method,
+                 self.allow_redirects))
 
     @property
     def callback(self):

@@ -1,3 +1,4 @@
 twisted
 lxml
 requests-threads
+py2neo
