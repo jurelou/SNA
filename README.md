@@ -1,4 +1,4 @@
-# Ship Nuclear Submersible (or Social Network Analysis ...)
+# Ship Submersible Nuclear (or Social Network Analysis ...)
 
 ## Core architecture
 ![Image not found](https://github.com/jurelou/SNA/blob/master/docs/architecture.png  "Architecture")
